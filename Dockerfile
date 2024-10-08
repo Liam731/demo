@@ -1,14 +1,13 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:11-jre-slim
-
-# Set the working directory inside the container
+# Stage 1: Build the application
+FROM maven:3.9.4-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean install
 
-# Copy the jar file to the container
-COPY target/*.jar app.jar
-
-# Make port 8080 available to the world outside this container
+# Stage 2: Run the application
+FROM eclipse-temurin:17
+WORKDIR /app
+COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar ./demo-aws.jar
 EXPOSE 8080
-
-# Run the jar file
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "demo-aws.jar"]
